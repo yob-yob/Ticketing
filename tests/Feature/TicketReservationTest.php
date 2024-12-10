@@ -85,7 +85,7 @@ test('users cannot reserve a ticket from an event where all tickets has already 
     $this->assertEquals($user->tickets->count(), 0);
 });
 
-test('users cannot reserve a ticket from an event where the deadline has already past', function () {
+test('users cannot reserve a ticket from an event where the deadline has passed', function () {
     Sanctum::actingAs(User::factory()->create());
 
     $event = Event::factory()->create([
