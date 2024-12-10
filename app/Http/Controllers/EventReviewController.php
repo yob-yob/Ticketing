@@ -5,10 +5,21 @@ namespace App\Http\Controllers;
 use App\Exceptions\CannotReviewOngoingEventException;
 use App\Exceptions\UnauthorizedReviewException;
 use App\Models\Event;
+use App\Models\Review;
 use Illuminate\Http\Request;
 
 class EventReviewController extends Controller
 {
+    public function index(Event $event)
+    {
+        $reviews = $event->reviews;
+
+        return response()->json([
+            'reviews' => $reviews,
+            'average_rating' => $reviews->sum('rating') / $reviews->count(),
+        ]);
+    }
+
     public function create(Event $event, Request $request)
     {
         $data = $request->validate([

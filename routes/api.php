@@ -14,5 +14,6 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::get('/event/index', [EventController::class, 'index']);
     Route::post('/event/create', [EventController::class, 'create']);
     Route::post('/event/{event}/reserve', TicketReservationController::class);
+    Route::get('/event/{event}/review/index', [EventReviewController::class, 'index']);
     Route::post('/event/{event}/review', [EventReviewController::class, 'create']);
 });

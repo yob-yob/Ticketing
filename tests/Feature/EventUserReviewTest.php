@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Event;
+use App\Models\Review;
 use App\Models\User;
 use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
 use Laravel\Sanctum\Sanctum;
@@ -113,4 +114,28 @@ test('users can only submit a review after attending an event', function () {
     $response->assertStatus(403);
 
     $this->assertDatabaseCount('reviews', 0);
+});
+
+test('can get all reviews for a specific event with average rating', function () {
+    $event = Event::factory()->create();
+    
+    $reviews = Review::factory(5)->create([
+        'event_id' => $event->id
+    ]);
+
+    Sanctum::actingAs(User::factory()->create());
+
+    $review = [
+        'comment' => fake()->sentences(3, true),
+        'rating' => 5,
+    ];
+
+    // User will attempt to create a review on event 2
+    $response = $this->get("/api/event/{$event->id}/review/index");
+
+    $response->assertStatus(200);
+
+    $response->assertJsonCount(5, 'reviews');
+
+    $response->assertJsonFragment(['average_rating' => $reviews->sum('rating') / $reviews->count()]);
 });
