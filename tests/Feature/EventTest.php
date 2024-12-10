@@ -3,14 +3,18 @@
 use App\Models\User;
 use Laravel\Sanctum\Sanctum;
 
+use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
+
+uses(LazilyRefreshDatabase::class);
+
 test('users can create event', function () {
     $eventDetails = [
         'title' => 'Test Title',
         'description' => 'Test Description',
-        'datetime' => now(),
+        'datetime' => now()->addMinute(),
         'location' => fake()->city(),
         'price' => 100000,
-        'attendee' => 5,
+        'attendee_limit' => 5,
     ];
 
     Sanctum::actingAs(User::factory()->create());
@@ -19,5 +23,8 @@ test('users can create event', function () {
 
     $response->assertStatus(201);
 
+    unset($eventDetails['attendee_limit']);
+
     $this->assertDatabaseHas('events', $eventDetails);
+    $this->assertDatabaseCount('tickets', 5);
 });
