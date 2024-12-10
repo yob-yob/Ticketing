@@ -18,6 +18,12 @@ class Event extends Model
         'price',
     ];
 
+    public function casts() {
+        return [
+            'datetime' => 'datetime'
+        ];
+    }
+
     public function tickets() {
         return $this->hasMany(Ticket::class);
     }

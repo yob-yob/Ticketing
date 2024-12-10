@@ -4,6 +4,7 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 
+use App\Exceptions\EventBookingClosedException;
 use App\Exceptions\InsufficientTicketsException;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -49,8 +50,15 @@ class User extends Authenticatable
         ];
     }
 
+    public function tickets()
+    {
+        return $this->hasMany(Ticket::class);
+    }
+
     public function reserveTickets(Event $event, $number_of_tickets)
     {
+        throw_if($event->datetime->isPast(), EventBookingClosedException::class);
+
         $tickets = $event->availableTickets()->limit($number_of_tickets)->get();
         
         throw_if($tickets->count() < $number_of_tickets, InsufficientTicketsException::class);

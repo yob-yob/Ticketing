@@ -7,6 +7,15 @@ use Illuminate\Http\Request;
 
 class EventController extends Controller
 {
+    public function index(Request $request)
+    {
+        $events = Event::query()->withCount('availableTickets')->get();
+
+        return response()->json([
+            'events' => $events
+        ]);
+    }
+
     public function create(Request $request)
     {
         $data = $request->validate([

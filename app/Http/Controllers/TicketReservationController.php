@@ -16,13 +16,13 @@ class TicketReservationController extends Controller
             'number_of_tickets' => ['required', 'min:1']
         ]);
 
-        
         try {
-            $tickets = auth()->user()->reserveTickets($event, $data['number_of_tickets']);
+            $tickets = $request->user()->reserveTickets($event, $data['number_of_tickets']);
         } catch (\App\Exceptions\InsufficientTicketsException $th) {
             abort(400, $th->getMessage());
+        } catch (\App\Exceptions\EventBookingClosedException $th) {
+            abort(400, $th->getMessage());
         }
-        
         
         return response()->json([
             'tickets' => $tickets
