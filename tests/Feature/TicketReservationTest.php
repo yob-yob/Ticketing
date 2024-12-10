@@ -60,7 +60,7 @@ test('users cannot reserve a ticket from an event that has no available tickets'
         'number_of_tickets' => 1
     ]);
 
-    $response->assertStatus(400);
+    $response->assertStatus(410);
 
     $this->assertEquals($event->reservedTickets->count(), 0);
 });
@@ -78,7 +78,7 @@ test('users cannot reserve a ticket from an event where all tickets has already 
         'number_of_tickets' => 1
     ]);
 
-    $response->assertStatus(400);
+    $response->assertStatus(410);
     
     $this->assertEquals($event->availableTickets->count(), 0);
     $this->assertEquals($event->reservedTickets->count(), 5);
@@ -97,7 +97,7 @@ test('users cannot reserve a ticket from an event where the datetime is already 
         'number_of_tickets' => 1
     ]);
 
-    $response->assertStatus(400);
+    $response->assertStatus(423);
 
     $this->assertEquals($event->reservedTickets->count(), 0);
 });
