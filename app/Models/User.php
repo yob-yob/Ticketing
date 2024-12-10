@@ -4,8 +4,10 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 
+use App\Exceptions\CannotReviewOngoingEventException;
 use App\Exceptions\EventBookingClosedException;
 use App\Exceptions\InsufficientTicketsException;
+use App\Exceptions\UnauthorizedReviewException;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -53,6 +55,29 @@ class User extends Authenticatable
     public function tickets()
     {
         return $this->hasMany(Ticket::class);
+    }
+
+    public function reviews()
+    {
+        return $this->hasMany(Review::class);
+    }
+
+    public function reviewEvent(Event $event, string $comment, int $rating)
+    {
+        // I expect an event to atleast have a duration of 1 hour...
+        throw_if($event->datetime->addHour()->isFuture(), CannotReviewOngoingEventException::class);
+
+        $event_ids = $this->tickets()->pluck('event_id');
+
+        throw_unless(in_array($event->id, $event_ids->toArray()), UnauthorizedReviewException::class);
+
+        $review = $this->reviews()->create([
+            'event_id' => $event->id,
+            'comment' => $comment,
+            'rating' => $rating,
+        ]);
+
+        return $review;
     }
 
     public function reserveTickets(Event $event, $number_of_tickets)

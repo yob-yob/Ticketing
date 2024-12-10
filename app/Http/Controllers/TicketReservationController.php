@@ -19,10 +19,11 @@ class TicketReservationController extends Controller
         try {
             $tickets = $request->user()->reserveTickets($event, $data['number_of_tickets']);
         } catch (\App\Exceptions\InsufficientTicketsException $th) {
-            abort(400, $th->getMessage());
+            abort(410, $th->getMessage()); // Gone Status Code
         } catch (\App\Exceptions\EventBookingClosedException $th) {
-            abort(400, $th->getMessage());
+            abort(423, $th->getMessage()); // Locked Status Code
         }
+        // Why no catch? because we want this to fail based on our test...
         
         return response()->json([
             'tickets' => $tickets

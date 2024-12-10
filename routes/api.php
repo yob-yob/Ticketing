@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\EventController;
+use App\Http\Controllers\EventReviewController;
 use App\Http\Controllers\TicketReservationController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -13,4 +14,5 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::get('/event/index', [EventController::class, 'index']);
     Route::post('/event/create', [EventController::class, 'create']);
     Route::post('/event/{event}/reserve', TicketReservationController::class);
+    Route::post('/event/{event}/review', [EventReviewController::class, 'create']);
 });
