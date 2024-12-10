@@ -28,3 +28,20 @@ test('users can create event', function () {
     $this->assertDatabaseHas('events', $eventDetails);
     $this->assertDatabaseCount('tickets', 5);
 });
+
+test('users must be authenticated to create an event', function () {
+    $eventDetails = [
+        'title' => 'Test Title',
+        'description' => 'Test Description',
+        'datetime' => now()->addMinute(),
+        'location' => fake()->city(),
+        'price' => 100000,
+        'attendee_limit' => 5,
+    ];
+
+    $response = $this->postJson('/api/event/create', $eventDetails);
+    
+    $response->assertStatus(401);
+    $this->assertDatabaseCount('events', 0);
+    $this->assertDatabaseCount('tickets', 0);
+});

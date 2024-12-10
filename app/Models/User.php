@@ -3,6 +3,8 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+
+use App\Exceptions\InsufficientTicketsException;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -45,5 +47,18 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    public function reserveTickets(Event $event, $number_of_tickets)
+    {
+        $tickets = $event->availableTickets()->limit($number_of_tickets)->get();
+        
+        throw_if($tickets->count() < $number_of_tickets, InsufficientTicketsException::class);
+
+        Ticket::query()->whereIn('id', $tickets->pluck('id'))->update([
+            'user_id' => $this->id
+        ]);
+
+        return $tickets;
     }
 }

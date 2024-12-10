@@ -21,4 +21,18 @@ class Event extends Model
     public function tickets() {
         return $this->hasMany(Ticket::class);
     }
+
+    public function availableTickets() {
+        return $this->tickets()->whereNull('user_id');
+    }
+
+    public function reservedTickets() {
+        return $this->tickets()->whereNotNull('user_id');
+    }
+
+    public function createTickets(int $count = 0) {
+        for ($i = 0; $i < $count; $i++) { 
+            $this->tickets()->create(); // can be optimized to use insert instead of creating one-by-one, but this will do for now.
+        }
+    }
 }

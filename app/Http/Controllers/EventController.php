@@ -19,10 +19,7 @@ class EventController extends Controller
         ]);
 
         $event = Event::create($data);
-
-        for ($i = 0; $i < $data['attendee_limit']; $i++) { 
-            $event->tickets()->create();
-        }
+        $event->createTickets($data['attendee_limit']);
 
         return response()->json([
             'event' => $event,
