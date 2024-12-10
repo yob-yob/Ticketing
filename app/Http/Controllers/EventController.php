@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\EventResource;
 use App\Models\Event;
 use Illuminate\Http\Request;
 
@@ -9,10 +10,11 @@ class EventController extends Controller
 {
     public function index(Request $request)
     {
-        $events = Event::query()->withCount('availableTickets')->get();
+        $events = Event::query()->withCount('availableTickets')->withAvg('reviews', 'rating')->get();
 
+        // We may want to use Laravel's API Resources here... for better data transformation...
         return response()->json([
-            'events' => $events
+            'events' => EventResource::collection($events)
         ]);
     }
 

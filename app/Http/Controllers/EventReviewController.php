@@ -12,11 +12,11 @@ class EventReviewController extends Controller
 {
     public function index(Event $event)
     {
-        $reviews = $event->reviews;
+        $event = $event->loadMissing('reviews')->loadAvg('reviews', 'rating');
 
         return response()->json([
-            'reviews' => $reviews,
-            'average_rating' => $reviews->sum('rating') / $reviews->count(),
+            'reviews' => $event->reviews,
+            'average_rating' => $event->reviews_avg_rating,
         ]);
     }
 

@@ -19,6 +19,6 @@ class RegistrationController extends Controller
 
         $user = User::create($data);
 
-        return $user;
+        return $user; // We may want to return a sanctum token here instead...
     }
 }
