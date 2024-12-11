@@ -20,7 +20,7 @@ test('users can create event', function () {
 
     Sanctum::actingAs(User::factory()->create());
 
-    $response = $this->post('/api/event/create', $eventDetails);
+    $response = $this->post(route('event.create'), $eventDetails);
 
     $response->assertStatus(201);
 
@@ -42,7 +42,7 @@ test('create event validation', function ($input, $validationError) {
 
     Sanctum::actingAs(User::factory()->create());
 
-    $response = $this->postJson('/api/event/create', $eventDetails);
+    $response = $this->postJson(route('event.create'), $eventDetails);
 
     $response->assertInvalid($validationError);
 
@@ -71,7 +71,7 @@ test('users must be authenticated to create an event', function () {
         'attendee_limit' => 5,
     ];
 
-    $response = $this->postJson('/api/event/create', $eventDetails);
+    $response = $this->postJson(route('event.create'), $eventDetails);
     
     $response->assertStatus(401);
     $this->assertDatabaseCount('events', 0);
@@ -84,7 +84,7 @@ test('users can get all events', function () {
     $events = Event::factory(10)->create();
     $events->first()->createTickets(5); // first event has 10 tickets
 
-    $response = $this->get('/api/event/index');
+    $response = $this->get(route('event.index'));
     
     $response->assertStatus(200);
 

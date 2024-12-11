@@ -12,8 +12,8 @@ Route::get('/user', function (Request $request) {
 
 Route::group(['middleware' => 'auth:sanctum'], function () {
     
-    Route::get('/event/index', [EventController::class, 'index']);
-    Route::post('/event/create', [EventController::class, 'create']);
+    Route::get('/event/index', [EventController::class, 'index'])->name('event.index');
+    Route::post('/event/create', [EventController::class, 'create'])->name('event.create');
 
     Route::post('/event/{event}/reserve', TicketReservationController::class)->name('event.reserve');
     
