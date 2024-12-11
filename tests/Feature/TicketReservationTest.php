@@ -11,7 +11,7 @@ test('users must be authenticated to reserve a ticket', function () {
     $event = Event::factory()->create();
     $event->createTickets(5);
 
-    $response = $this->postJson("/api/event/{$event->id}/reserve", [
+    $response = $this->postJson(route('event.reserve', ['event' => $event]), [
         'number_of_tickets' => 1
     ]);
 
@@ -24,7 +24,7 @@ test('users can reserve a ticket for an event', function () {
     $event = Event::factory()->create();
     $event->createTickets(5);
 
-    $response = $this->post("/api/event/{$event->id}/reserve", [
+    $response = $this->post(route('event.reserve', ['event' => $event]), [
         'number_of_tickets' => 1
     ]);
 
@@ -40,7 +40,7 @@ test('users can reserve MULTIPLE tickets for an event', function () {
     $event = Event::factory()->create();
     $event->createTickets(5);
 
-    $response = $this->post("/api/event/{$event->id}/reserve", [
+    $response = $this->post(route('event.reserve', ['event' => $event]), [
         'number_of_tickets' => 5
     ]);
 
@@ -56,7 +56,7 @@ test('ticket reservation validation', function ($input, $validationError) {
     $event = Event::factory()->create();
     $event->createTickets(5);
 
-    $response = $this->post("/api/event/{$event->id}/reserve", $input);
+    $response = $this->post(route('event.reserve', ['event' => $event]), $input);
 
     $response->assertInvalid($validationError);
 
@@ -80,7 +80,7 @@ test('users cannot reserve a ticket from an event that has no available tickets'
     $event = Event::factory()->create();
     $event->createTickets(0);
 
-    $response = $this->post("/api/event/{$event->id}/reserve", [
+    $response = $this->post(route('event.reserve', ['event' => $event]), [
         'number_of_tickets' => 1
     ]);
 
@@ -98,7 +98,7 @@ test('users cannot reserve a ticket from an event where all tickets has already 
         'user_id' => User::factory()->create()->id
     ]);
 
-    $response = $this->post("/api/event/{$event->id}/reserve", [
+    $response = $this->post(route('event.reserve', ['event' => $event]), [
         'number_of_tickets' => 1
     ]);
 
@@ -117,7 +117,7 @@ test('users cannot reserve a ticket from an event where the deadline has passed'
     ]);
     $event->createTickets(5); // Ensure that there are still available tickets to book for this event. ()
 
-    $response = $this->post("/api/event/{$event->id}/reserve", [
+    $response = $this->post(route('event.reserve', ['event' => $event]), [
         'number_of_tickets' => 1
     ]);
 
