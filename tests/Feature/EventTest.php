@@ -49,15 +49,16 @@ test('create event validation', function ($input, $validationError) {
     $this->assertDatabaseCount('events', 0);
     $this->assertDatabaseCount('tickets', 0);
 })->with([
-    'event date must be in the future' => [
-        ['datetime' => now()->subMinute()], ['datetime' => 'The datetime field must be a date after now.']
-    ],
-    'attendee limit must be numeric' => [
-        ['attendee_limit' => 'non-numeric-value'], ['attendee_limit' => 'The attendee limit field must be a number.']
-    ],
-    'attendee limit must be greater than 1' => [
-        ['attendee_limit' => 0], ['attendee_limit' => 'The attendee limit field must be at least 1.']
-    ]
+    'title must be provided' => [['title' => null], ['title' => 'The title field is required.']],
+    'description must be provided' => [['description' => null], ['description' => 'The description field is required.']],
+    'datetime must be provided' => [['datetime' => null], ['datetime' => 'The datetime field is required.']],
+    'location must be provided' => [['location' => null], ['location' => 'The location field is required.']],
+    'price must be provided' => [['price' => null], ['price' => 'The price field is required.']],
+    'attendee_limit must be provided' => [['attendee_limit' => null], ['attendee_limit' => 'The attendee limit field is required.']],
+    'datetime must be in the future' => [['datetime' => now()->subMinute()], ['datetime' => 'The datetime field must be a date after now.']],
+    'price must be numeric' => [['price' => 'non-numeric-value'], ['price' => 'The price field must be a number.']],
+    'attendee limit must be numeric' => [['attendee_limit' => 'non-numeric-value'], ['attendee_limit' => 'The attendee limit field must be a number.']],
+    'attendee limit must be greater than 1' => [['attendee_limit' => 0], ['attendee_limit' => 'The attendee limit field must be at least 1.']]
 ]);
 
 test('users must be authenticated to create an event', function () {
