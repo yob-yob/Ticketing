@@ -30,6 +30,66 @@ test('users can create event', function () {
     $this->assertDatabaseCount('tickets', 5);
 });
 
+test('event date must be in the future', function () {
+    $eventDetails = [
+        'title' => 'Test Title',
+        'description' => 'Test Description',
+        'datetime' => now()->subMinute(),
+        'location' => fake()->city(),
+        'price' => 100000,
+        'attendee_limit' => 5,
+    ];
+
+    Sanctum::actingAs(User::factory()->create());
+
+    $response = $this->postJson('/api/event/create', $eventDetails);
+
+    $response->assertInvalid(['datetime' => 'The datetime field must be a date after now.']);
+
+    $this->assertDatabaseCount('events', 0);
+    $this->assertDatabaseCount('tickets', 0);
+});
+
+test('attendee limit must be numeric', function () {
+    $eventDetails = [
+        'title' => 'Test Title',
+        'description' => 'Test Description',
+        'datetime' => now()->addMinute(),
+        'location' => fake()->city(),
+        'price' => 100000,
+        'attendee_limit' => 'non-numeric-value',
+    ];
+
+    Sanctum::actingAs(User::factory()->create());
+
+    $response = $this->postJson('/api/event/create', $eventDetails);
+
+    $response->assertInvalid(['attendee_limit' => 'The attendee limit field must be a number.']);
+
+    $this->assertDatabaseCount('events', 0);
+    $this->assertDatabaseCount('tickets', 0);
+});
+
+test('attendee limit must be greater than 1', function () {
+    $eventDetails = [
+        'title' => 'Test Title',
+        'description' => 'Test Description',
+        'datetime' => now()->addMinute(),
+        'location' => fake()->city(),
+        'price' => 100000,
+        'attendee_limit' => 0,
+    ];
+
+    Sanctum::actingAs(User::factory()->create());
+
+    $response = $this->postJson('/api/event/create', $eventDetails);
+
+    $response->assertInvalid(['attendee_limit' => 'The attendee limit field must be at least 1.']);
+
+    $this->assertDatabaseCount('events', 0);
+    $this->assertDatabaseCount('tickets', 0);
+});
+
 test('users must be authenticated to create an event', function () {
     $eventDetails = [
         'title' => 'Test Title',
