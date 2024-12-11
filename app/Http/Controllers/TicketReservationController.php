@@ -13,7 +13,7 @@ class TicketReservationController extends Controller
     public function __invoke(Request $request, Event $event)
     {
         $data = $request->validate([
-            'number_of_tickets' => ['required', 'min:1']
+            'number_of_tickets' => ['required', 'numeric', 'min:1']
         ]);
 
         try {

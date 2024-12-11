@@ -50,6 +50,30 @@ test('users can reserve MULTIPLE tickets for an event', function () {
     $this->assertEquals($event->reservedTickets->count(), 5);
 });
 
+test('ticket reservation validation', function ($input, $validationError) {
+    Sanctum::actingAs(User::factory()->create());
+
+    $event = Event::factory()->create();
+    $event->createTickets(5);
+
+    $response = $this->post("/api/event/{$event->id}/reserve", $input);
+
+    $response->assertInvalid($validationError);
+
+    $this->assertEquals($event->availableTickets->count(), 5);
+    $this->assertEquals($event->reservedTickets->count(), 0);
+})->with([
+    'number of tickers is required' => [
+        ['number_of_tickets' => null], ['number_of_tickets' => "The number of tickets field is required."]
+    ],
+    'number of tickers must be numeric' => [
+        ['number_of_tickets' => "non-numeric-valie"], ['number_of_tickets' => "The number of tickets field must be a number."]
+    ],
+    'number of tickers must be greater than 1' => [
+        ['number_of_tickets' => 0], ['number_of_tickets' => "The number of tickets field must be at least 1."]
+    ]
+]);
+
 test('users cannot reserve a ticket from an event that has no available tickets', function () {
     Sanctum::actingAs(User::factory()->create());
 
