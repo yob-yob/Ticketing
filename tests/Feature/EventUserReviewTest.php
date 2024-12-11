@@ -26,7 +26,7 @@ test('only authenticated users can create a review', function () {
         'rating' => 5,
     ];
 
-    $response = $this->postJson("/api/event/{$event->id}/review", $review);
+    $response = $this->postJson(route("event.review.create", ['event' => $event]), $review);
 
     $response->assertStatus(401);
 
@@ -53,7 +53,7 @@ test('users can leave a review on an event', function () {
         'rating' => 5,
     ];
 
-    $response = $this->postJson("/api/event/{$event->id}/review", $review);
+    $response = $this->postJson(route("event.review.create", ['event' => $event]), $review);
 
     $response->assertStatus(200);
 
@@ -64,6 +64,34 @@ test('users can leave a review on an event', function () {
         ...$review
     ]);
 });
+
+test('create a review validation', function ($input, $validationError) {
+    $event = Event::factory()->create();
+    $event->createTickets(1);
+    
+    $user = User::factory()->create();
+    $user->reserveTickets($event, 1);
+
+    Sanctum::actingAs($user);
+
+    $review = array_merge([
+        'comment' => fake()->sentences(3, true),
+        'rating' => 5,
+    ], $input);
+
+    $response = $this->postJson(route("event.review.create", ['event' => $event]), $review);
+
+    $response->assertInvalid($validationError);
+
+    $this->assertDatabaseCount('reviews', 0);
+})->with([
+    'Comment must be provided' => [['comment' => null], ['comment' => "The comment field is required."]],
+    'Comment must be <= 1000 characters' => [['comment' => fake()->words(1000, true)], ['comment' => "The comment field must not be greater than 1000 characters."]],
+    'Rating must be provided' => [['rating' => null], ['rating' => "The rating field is required."]],
+    'Rating must be numeric' => [['rating' => "non-numeric-value"], ['rating' => "The rating field must be a number."]],
+    'Rating must be <= 5' => [['rating' => 6], ['rating' => "The rating field must not be greater than 5."]],
+    'Rating must be >= 1' => [['rating' => 0], ['rating' => "The rating field must be at least 1."] ]
+]);
 
 test('only users that has purchased a ticket for that event can leave a review on that event', function () {
     $event = Event::factory()->create();
@@ -85,7 +113,7 @@ test('only users that has purchased a ticket for that event can leave a review o
     ];
 
     // User will attempt to create a review on event 2
-    $response = $this->postJson("/api/event/{$event2->id}/review", $review);
+    $response = $this->postJson(route("event.review.create", ['event' => $event2]), $review);
 
     $response->assertStatus(403);
 
@@ -108,8 +136,8 @@ test('users can only submit a review after attending an event', function () {
         'rating' => 5,
     ];
 
-    // User will attempt to create a review on event 2
-    $response = $this->postJson("/api/event/{$event->id}/review", $review);
+    // User will attempt to create a review on event that does not yet finished or is still in the past...
+    $response = $this->postJson(route("event.review.create", ['event' => $event]), $review);
 
     $response->assertStatus(403);
 
@@ -131,7 +159,7 @@ test('can get all reviews for a specific event with average rating', function ()
     ];
 
     // User will attempt to create a review on event 2
-    $response = $this->get("/api/event/{$event->id}/review/index");
+    $response = $this->get(route("event.review.index", ['event' => $event]));
 
     $response->assertStatus(200);
 
