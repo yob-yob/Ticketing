@@ -30,65 +30,35 @@ test('users can create event', function () {
     $this->assertDatabaseCount('tickets', 5);
 });
 
-test('event date must be in the future', function () {
-    $eventDetails = [
+test('create event validation', function ($input, $validationError) {
+    $eventDetails = array_merge([
         'title' => 'Test Title',
         'description' => 'Test Description',
-        'datetime' => now()->subMinute(),
+        'datetime' => now()->addDay(),
         'location' => fake()->city(),
         'price' => 100000,
         'attendee_limit' => 5,
-    ];
+    ], $input);
 
     Sanctum::actingAs(User::factory()->create());
 
     $response = $this->postJson('/api/event/create', $eventDetails);
 
-    $response->assertInvalid(['datetime' => 'The datetime field must be a date after now.']);
+    $response->assertInvalid($validationError);
 
     $this->assertDatabaseCount('events', 0);
     $this->assertDatabaseCount('tickets', 0);
-});
-
-test('attendee limit must be numeric', function () {
-    $eventDetails = [
-        'title' => 'Test Title',
-        'description' => 'Test Description',
-        'datetime' => now()->addMinute(),
-        'location' => fake()->city(),
-        'price' => 100000,
-        'attendee_limit' => 'non-numeric-value',
-    ];
-
-    Sanctum::actingAs(User::factory()->create());
-
-    $response = $this->postJson('/api/event/create', $eventDetails);
-
-    $response->assertInvalid(['attendee_limit' => 'The attendee limit field must be a number.']);
-
-    $this->assertDatabaseCount('events', 0);
-    $this->assertDatabaseCount('tickets', 0);
-});
-
-test('attendee limit must be greater than 1', function () {
-    $eventDetails = [
-        'title' => 'Test Title',
-        'description' => 'Test Description',
-        'datetime' => now()->addMinute(),
-        'location' => fake()->city(),
-        'price' => 100000,
-        'attendee_limit' => 0,
-    ];
-
-    Sanctum::actingAs(User::factory()->create());
-
-    $response = $this->postJson('/api/event/create', $eventDetails);
-
-    $response->assertInvalid(['attendee_limit' => 'The attendee limit field must be at least 1.']);
-
-    $this->assertDatabaseCount('events', 0);
-    $this->assertDatabaseCount('tickets', 0);
-});
+})->with([
+    'event date must be in the future' => [
+        ['datetime' => now()->subMinute()], ['datetime' => 'The datetime field must be a date after now.']
+    ],
+    'attendee limit must be numeric' => [
+        ['attendee_limit' => 'non-numeric-value'], ['attendee_limit' => 'The attendee limit field must be a number.']
+    ],
+    'attendee limit must be greater than 1' => [
+        ['attendee_limit' => 0], ['attendee_limit' => 'The attendee limit field must be at least 1.']
+    ]
+]);
 
 test('users must be authenticated to create an event', function () {
     $eventDetails = [
